@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>ScreenFleet — Activate Player</title>
+<style>
+  :root {
+    --navy:   #13224D;
+    --navy2:  #0E1B3A;
+    --yellow: #FACC16;
+    --royal:  #2648B3;
+    --steel:  #5B6B8C;
+    --steel2: #8794AE;
+    --gray:   #EAEAEA;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: var(--navy);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: #fff;
+  }
+
+  /* Two-column layout: left = branding + instructions, right = code + QR */
+  .stage {
+    position: fixed; inset: 0;
+    display: flex;
+    background:
+      radial-gradient(circle at 13px 13px, rgba(135,148,174,0.05) 1.4px, transparent 1.6px) 0 0 / 26px 26px,
+      radial-gradient(ellipse at 30% 50%, #1A2C5A 0%, var(--navy) 60%, var(--navy2) 100%);
+  }
+
+  /* ── Left panel ── */
+  .left {
+    width: 55%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 70px 80px 100px;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .logo {
+    width: 280px;
+    margin-bottom: 56px;
+  }
+
+  .headline {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  .headline span { color: var(--yellow); }
+
+  .subhead {
+    font-size: 22px;
+    color: var(--steel2);
+    line-height: 1.5;
+    margin-bottom: 52px;
+    max-width: 560px;
+  }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 22px; }
+  .step { display: flex; align-items: flex-start; gap: 18px; }
+  .step-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--yellow); color: var(--navy);
+    font-size: 16px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .step-text { font-size: 20px; color: #CBD5E1; line-height: 1.4; }
+  .step-text strong { color: #fff; font-weight: 600; }
+  .step-url {
+    font-size: 18px; font-weight: 700;
+    color: var(--yellow); letter-spacing: 0.01em;
+    margin-top: 4px;
+  }
+
+  /* ── Right panel ── */
+  .right {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 60px;
+    gap: 0;
+  }
+
+  .code-label {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--steel2);
+    margin-bottom: 16px;
+  }
+
+  .code-display {
+    font-size: 100px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    color: var(--yellow);
+    line-height: 1;
+    margin-bottom: 40px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .qr-wrap {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 36px;
+    box-shadow: 0 0 60px rgba(250,204,22,0.12);
+  }
+
+  .qr-caption {
+    font-size: 17px;
+    color: var(--steel2);
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 36px;
+  }
+  .qr-caption strong { color: #fff; }
+
+  /* Status pill */
+  .status-pill {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 100px;
+    padding: 10px 22px;
+    font-size: 16px;
+    color: var(--steel2);
+  }
+  .status-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--steel2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-dot.active { background: #4ade80; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Claimed overlay */
+  .claimed-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: var(--navy2);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    z-index: 999;
+  }
+  .claimed-overlay.show { display: flex; }
+  .claimed-check {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .claimed-check svg { width: 56px; height: 56px; }
+  .claimed-title { font-size: 52px; font-weight: 800; color: #fff; }
+  .claimed-sub { font-size: 22px; color: var(--steel2); }
+
+  /* Error state */
+  .error-msg {
+    display: none;
+    color: #f87171;
+    font-size: 15px;
+    text-align: center;
+    margin-top: 12px;
+  }
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <!-- Left: branding + steps -->
+  <div class="left">
+    <img class="logo"
+      src="https://files.screenfleet.io/SF_White.png"
+      alt="ScreenFleet"
+      onerror="this.style.display='none'"
+    />
+    <div class="headline">
+      Activate Your<br><span>BrightSign Player</span>
+    </div>
+    <div class="subhead">
+      Scan the QR code or visit the URL below to connect this player to your ScreenFleet account.
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          Scan the QR code with your phone<br>
+          <strong>— or —</strong> visit:
+          <div class="step-url">app.screenfleet.io/activate</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          Sign in or <strong>create a free ScreenFleet account</strong>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          Enter the code shown on this screen and select or create an asset
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          This player will <strong>automatically start playing</strong> — no SD card editing required
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: code + QR -->
+  <div class="right">
+    <div class="code-label">Activation Code</div>
+    <div class="code-display" id="codeDisplay">····</div>
+
+    <div class="qr-wrap">
+      <canvas id="qrCanvas" width="260" height="260"></canvas>
+    </div>
+
+    <div class="qr-caption">
+      Scan to open <strong>app.screenfleet.io/activate</strong><br>
+      with your activation code pre-filled
+    </div>
+
+    <div class="status-pill" id="statusPill">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Waiting for activation…</span>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+</div>
+
+<!-- Claimed overlay -->
+<div class="claimed-overlay" id="claimedOverlay">
+  <div class="claimed-check">
+    <svg viewBox="0 0 56 56" fill="none">
+      <path d="M12 28L23 39L44 18" stroke="#13224D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="claimed-title">Player Activated!</div>
+  <div class="claimed-sub">Loading your content…</div>
+</div>
+
+<!--
+  Minimal QR encoder — generates a QR code for the activate URL.
+  Uses a simplified alphanumeric mode encoder sufficient for short URLs.
+  For production, consider replacing with a full QR library.
+-->
+<script>
+// ── Config (written by autorun.brs via InjectJavascript before page load) ──
+// window.__SF_ACTIVATION__ = { code, activateUrl, deviceId, apiOrigin }
+// Fallback for testing in browser:
+var _cfg = window.__SF_ACTIVATION__ || {};
+var API_ORIGIN = _cfg.apiOrigin || 'https://app.screenfleet.io';
+var DEVICE_ID  = _cfg.deviceId  || '';
+var POLL_MS    = 12000;
+
+// ── Simple QR code via Google Chart API (fallback for BrightSign) ──────────
+function renderQR(url) {
+  var canvas = document.getElementById('qrCanvas');
+  var img = new Image();
+  var encoded = encodeURIComponent(url);
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encoded;
+  img.onload = function() {
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, 260, 260);
+  };
+  img.onerror = function() {
+    // Fallback: draw a simple text placeholder if QR service unavailable
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, 260, 260);
+    ctx.fillStyle = '#13224D';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('app.screenfleet.io', 130, 120);
+    ctx.fillText('/activate', 130, 140);
+  };
+}
+
+// ── Poll for activation ────────────────────────────────────────────────────
+var _pollTimer = null;
+var _pollCount = 0;
+
+function updateStatus(text, active) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').className = 'status-dot' + (active ? ' active' : '');
+}
+
+function showError(msg) {
+  var el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.className = 'error-msg show';
+}
+
+function onClaimed() {
+  clearInterval(_pollTimer);
+  document.getElementById('claimedOverlay').className = 'claimed-overlay show';
+  // autorun.brs will detect claimed status and write config + navigate to index.html
+}
+
+function poll() {
+  if (!DEVICE_ID) return;
+  _pollCount++;
+
+  fetch(API_ORIGIN + '/functions/pollPlayerActivation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ device_id: DEVICE_ID })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.status === 'claimed') {
+      updateStatus('Activated! Loading content…', true);
+      onClaimed();
+    } else if (data.status === 'upgrade_required') {
+      updateStatus('Upgrade required — visit app.screenfleet.io', false);
+    } else {
+      // Still pending
+      updateStatus('Waiting for activation… (' + _pollCount + ')', false);
+    }
+  })
+  .catch(function(e) {
+    console.warn('[SF-ACTIVATE] Poll error:', e.message);
+    updateStatus('Checking connection…', false);
+  });
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+// Called by autorun.brs via InjectJavascript after getting code from backend
+window.sfSetActivationCode = function(code, activateUrl, deviceId) {
+  DEVICE_ID = deviceId;
+  document.getElementById('codeDisplay').textContent = code;
+  renderQR(activateUrl);
+  updateStatus('Waiting for activation…', false);
+  _pollTimer = setInterval(poll, POLL_MS);
+  // First poll immediately
+  setTimeout(poll, 1000);
+};
+
+// If already set via __SF_ACTIVATION__ global
+if (_cfg.code) {
+  window.sfSetActivationCode(_cfg.code, _cfg.activateUrl, _cfg.deviceId);
+}
+</script>
+</body>
+</html>
