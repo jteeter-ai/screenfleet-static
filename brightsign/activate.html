@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+<title>ScreenFleet — Activate Player</title>
+<style>
+  :root {
+    --navy:   #13224D;
+    --navy2:  #0E1B3A;
+    --yellow: #FACC16;
+    --steel:  #5B6B8C;
+    --steel2: #8794AE;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100vw; height: 100vh; overflow: hidden;
+    background: var(--navy);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: #fff;
+  }
+  .stage {
+    position: fixed; inset: 0; width: 100vw; height: 100vh;
+    display: flex;
+    background:
+      radial-gradient(circle at 13px 13px, rgba(135,148,174,0.05) 1.4px, transparent 1.6px) 0 0 / 26px 26px,
+      radial-gradient(ellipse at 30% 50%, #1A2C5A 0%, var(--navy) 60%, var(--navy2) 100%);
+  }
+  .left {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 2vh 3vw; border-right: 1px solid rgba(255,255,255,0.06);
+    width: 52%; min-width: 0;
+  }
+  .right {
+    width: 48%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1.5vh 2vw; min-width: 0;
+  }
+  .logo {
+    height: clamp(18px, 5vh, 52px); width: auto;
+    margin-bottom: clamp(6px, 1.5vh, 28px);
+    object-fit: contain; object-position: left center;
+  }
+  .headline {
+    font-size: clamp(11px, 3.2vh, 46px); font-weight: 800;
+    line-height: 1.15; letter-spacing: -0.02em;
+    margin-bottom: clamp(4px, 1vh, 18px);
+  }
+  .headline span { color: var(--yellow); }
+  .subhead {
+    font-size: clamp(9px, 1.8vh, 20px); color: var(--steel2);
+    line-height: 1.4; margin-bottom: clamp(4px, 1.2vh, 32px); max-width: 52vw;
+  }
+  .steps { display: flex; flex-direction: column; gap: clamp(4px, 1vh, 18px); }
+  .step  { display: flex; align-items: flex-start; gap: clamp(6px, 1vw, 16px); }
+  .step-num {
+    width: clamp(16px, 3.2vh, 34px); height: clamp(16px, 3.2vh, 34px);
+    border-radius: 50%; background: var(--yellow); color: var(--navy);
+    font-size: clamp(8px, 1.5vh, 15px); font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-text { font-size: clamp(8px, 1.6vh, 18px); color: #CBD5E1; line-height: 1.35; }
+  .step-text strong { color: #fff; font-weight: 600; }
+  .step-url { font-size: clamp(8px, 1.7vh, 17px); font-weight: 700; color: var(--yellow); margin-top: 2px; }
+  .code-label {
+    font-size: clamp(7px, 1.3vh, 14px); font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel2);
+    margin-bottom: clamp(2px, 0.5vh, 12px);
+  }
+  .code-display {
+    font-size: clamp(22px, 9vh, 96px); font-weight: 900;
+    letter-spacing: 0.14em; color: var(--yellow); line-height: 1;
+    margin-bottom: clamp(4px, 1.2vh, 28px); font-variant-numeric: tabular-nums;
+  }
+  .qr-wrap {
+    background: #fff; border-radius: clamp(6px, 1.2vh, 14px);
+    padding: clamp(4px, 1vh, 16px); margin-bottom: clamp(4px, 1vh, 24px);
+    box-shadow: 0 0 40px rgba(250,204,22,0.10);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #qrCanvas {
+    width: clamp(60px, 38vh, 260px); height: clamp(60px, 38vh, 260px); display: block;
+  }
+  .qr-caption {
+    font-size: clamp(7px, 1.3vh, 15px); color: var(--steel2);
+    text-align: center; line-height: 1.4; margin-bottom: clamp(4px, 0.8vh, 20px);
+  }
+  .qr-caption strong { color: #fff; }
+  .status-pill {
+    display: flex; align-items: center; gap: clamp(4px, 0.8vw, 10px);
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 100px; padding: clamp(4px, 0.8vh, 10px) clamp(10px, 1.5vw, 22px);
+    font-size: clamp(7px, 1.3vh, 15px); color: var(--steel2);
+  }
+  .status-dot {
+    width: clamp(5px, 0.9vh, 9px); height: clamp(5px, 0.9vh, 9px);
+    border-radius: 50%; background: var(--steel2); flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-dot.active { background: #4ade80; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .claimed-overlay {
+    display: none; position: fixed; inset: 0; background: var(--navy2);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(10px, 2vh, 24px); z-index: 999;
+  }
+  .claimed-overlay.show { display: flex; }
+  .claimed-check {
+    width: clamp(40px, 10vh, 100px); height: clamp(40px, 10vh, 100px);
+    border-radius: 50%; background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .claimed-check svg { width: clamp(22px, 5.5vh, 56px); height: clamp(22px, 5.5vh, 56px); }
+  .claimed-title { font-size: clamp(18px, 6vh, 52px); font-weight: 800; color: #fff; }
+  .claimed-sub  { font-size: clamp(10px, 2.2vh, 22px); color: var(--steel2); }
+  @media (max-height: 200px) {
+    .subhead { display: none; }
+    .step-text { font-size: 8px; }
+    .steps { gap: 3px; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="left">
+    <img class="logo" src="https://files.screenfleet.io/SF_White.png" alt="ScreenFleet"
+      onerror="this.style.display='none'"/>
+    <div class="headline"><span>Activate Your</span><br>BrightSign Player</div>
+    <div class="subhead">Scan the QR code or visit the URL below to connect this player to your ScreenFleet account.</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Scan the QR code or visit:
+          <div class="step-url">app.screenfleet.io/activate</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">Sign in or <strong>create a free ScreenFleet account</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">Enter the code shown and select or create an asset</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">Player <strong>automatically starts playing</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="code-label">Activation Code</div>
+    <div class="code-display" id="codeDisplay">····</div>
+    <div class="qr-wrap"><canvas id="qrCanvas" width="260" height="260"></canvas></div>
+    <div class="qr-caption">Scan to open <strong>app.screenfleet.io/activate</strong><br>with your code pre-filled</div>
+    <div class="status-pill" id="statusPill">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Waiting for activation…</span>
+    </div>
+  </div>
+</div>
+<div class="claimed-overlay" id="claimedOverlay">
+  <div class="claimed-check">
+    <svg viewBox="0 0 56 56" fill="none">
+      <path d="M12 28L23 39L44 18" stroke="#13224D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="claimed-title">Player Activated!</div>
+  <div class="claimed-sub">Loading your content…</div>
+</div>
+<script>
+// Resize body to match config.json canvas dimensions on BrightSign
+(function() {
+  fetch('./config.json').then(function(r){return r.json();}).then(function(cfg){
+    var w = cfg.screenWidth || 0;
+    var h = cfg.screenHeight || 0;
+    if (w > 0 && h > 0) {
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (meta) meta.setAttribute('content','width='+w+',height='+h);
+      document.documentElement.style.width  = w+'px';
+      document.documentElement.style.height = h+'px';
+      document.body.style.width  = w+'px';
+      document.body.style.height = h+'px';
+    }
+  }).catch(function(){});
+})();
+
+var _cfg = window.__SF_ACTIVATION__ || {};
+var API_ORIGIN = _cfg.apiOrigin || 'https://app.screenfleet.io';
+var DEVICE_ID  = _cfg.deviceId  || '';
+var POLL_MS    = 12000;
+var _pollCount = 0;
+
+function renderQR(url) {
+  var canvas = document.getElementById('qrCanvas');
+  var size = Math.round(Math.min(canvas.offsetWidth || 260, canvas.offsetHeight || 260));
+  canvas.width = size; canvas.height = size;
+  var img = new Image();
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size='+size+'x'+size+'&margin=0&data='+encodeURIComponent(url);
+  img.onload = function() { canvas.getContext('2d').drawImage(img,0,0,size,size); };
+  img.onerror = function() {
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#13224D'; ctx.textAlign='center';
+    ctx.font='bold '+Math.round(size*0.055)+'px monospace';
+    ctx.fillText('app.screenfleet.io',size/2,size*0.45);
+    ctx.fillText('/activate',size/2,size*0.55);
+  };
+}
+
+function updateStatus(text, active) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').className = 'status-dot'+(active?' active':'');
+}
+
+function poll() {
+  if (!DEVICE_ID) return;
+  _pollCount++;
+  fetch(API_ORIGIN+'/functions/pollPlayerActivation',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({device_id: DEVICE_ID})
+  }).then(function(r){return r.json();}).then(function(data){
+    if (data.status === 'claimed') {
+      updateStatus('Activated! Loading content…', true);
+      document.getElementById('claimedOverlay').className = 'claimed-overlay show';
+    } else if (data.status === 'upgrade_required') {
+      updateStatus('Upgrade required — visit app.screenfleet.io', false);
+    } else {
+      updateStatus('Waiting for activation… ('+_pollCount+')', false);
+    }
+  }).catch(function(e){
+    console.warn('[SF-ACTIVATE] Poll error:',e.message);
+    updateStatus('Checking connection…', false);
+  });
+}
+
+window.sfSetActivationCode = function(code, activateUrl, deviceId) {
+  DEVICE_ID = deviceId;
+  document.getElementById('codeDisplay').textContent = code;
+  // Allow layout to settle before measuring QR canvas size
+  setTimeout(function() { renderQR(activateUrl); }, 100);
+  updateStatus('Waiting for activation…', false);
+  setInterval(poll, POLL_MS);
+  setTimeout(poll, 1000);
+};
+
+if (_cfg.code) window.sfSetActivationCode(_cfg.code, _cfg.activateUrl, _cfg.deviceId);
+</script>
+</body>
+</html>
