@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080" id="sfViewport">
+<title>ScreenFleet — Activate</title>
+<style>
+  :root { --yellow: #FACC16; --navy: #13224D; --navy2: #0E1B3A; --steel: #8794AE; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: var(--navy);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: #fff;
+  }
+
+  /* Full canvas — centers the card both horizontally and vertically */
+  .stage {
+    position: fixed; inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 13px 13px, rgba(135,148,174,0.05) 1.4px, transparent 1.6px) 0 0 / 26px 26px,
+      radial-gradient(ellipse at 50% 50%, #1A2C5A 0%, var(--navy) 60%, var(--navy2) 100%);
+  }
+
+  /* Card — max 768px wide, height fits within canvas */
+  .card {
+    width: min(768px, 90vw);
+    max-height: 96vh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4vh;
+    overflow: hidden;
+  }
+
+  /* Left: headline + steps */
+  .info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.8vh;
+    min-width: 0;
+  }
+
+  .logo {
+    height: clamp(16px, 4.5vh, 40px);
+    width: auto;
+    object-fit: contain;
+    object-position: left;
+  }
+
+  h1 {
+    font-size: clamp(13px, 3.8vh, 32px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  h1 em { color: var(--yellow); font-style: normal; }
+
+  .steps { display: flex; flex-direction: column; gap: 1.2vh; }
+  .step  { display: flex; align-items: center; gap: 1.2vh; }
+
+  .num {
+    width: clamp(16px, 3.2vh, 28px);
+    height: clamp(16px, 3.2vh, 28px);
+    border-radius: 50%;
+    background: var(--yellow); color: var(--navy);
+    font-size: clamp(8px, 1.5vh, 13px); font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step p {
+    font-size: clamp(8px, 1.6vh, 15px);
+    color: #CBD5E1; line-height: 1.3;
+  }
+  .step p strong { color: #fff; }
+  .step p .url  { color: var(--yellow); font-weight: 700; display: block; margin-top: 1px; }
+
+  /* Right: code + QR */
+  .qr-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5vh;
+    flex-shrink: 0;
+  }
+
+  .code-label {
+    font-size: clamp(7px, 1.2vh, 11px);
+    font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--steel);
+  }
+
+  .code {
+    font-size: clamp(28px, 8vh, 64px);
+    font-weight: 900; letter-spacing: 0.16em;
+    color: var(--yellow); line-height: 1;
+  }
+
+  .qr-box {
+    background: #fff;
+    border-radius: clamp(6px, 1vh, 12px);
+    padding: clamp(6px, 1.2vh, 12px);
+  }
+
+  /* QR image — sized to 35% of canvas height, never exceeds 220px */
+  #qrImg {
+    display: block;
+    width:  clamp(60px, 35vh, 220px);
+    height: clamp(60px, 35vh, 220px);
+  }
+
+  .status {
+    font-size: clamp(7px, 1.2vh, 12px);
+    color: var(--steel);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .dot {
+    width: clamp(5px, 0.9vh, 8px); height: clamp(5px, 0.9vh, 8px);
+    border-radius: 50%; background: var(--steel); flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .dot.on { background: #4ade80; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* Claimed overlay */
+  .claimed {
+    display: none; position: fixed; inset: 0;
+    background: var(--navy2);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 2vh; z-index: 99;
+  }
+  .claimed.show { display: flex; }
+  .check {
+    width: clamp(40px, 10vh, 80px); height: clamp(40px, 10vh, 80px);
+    border-radius: 50%; background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .check svg { width: 55%; height: 55%; }
+  .claimed h2 { font-size: clamp(18px, 5.5vh, 44px); font-weight: 800; }
+  .claimed p  { font-size: clamp(11px, 2vh, 18px); color: var(--steel); }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="card">
+
+    <!-- Left: info -->
+    <div class="info">
+      <img class="logo" src="https://files.screenfleet.io/SF_White.png" alt="ScreenFleet"
+           onerror="this.style.display='none'">
+      <h1>Activate Your<br><em>BrightSign Player</em></h1>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <p>Scan the QR code or visit:
+            <span class="url">app.screenfleet.io/activate</span>
+          </p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <p>Sign in or <strong>create a free ScreenFleet account</strong></p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <p>Enter the code shown and select or create an asset</p>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <p>Player <strong>starts playing automatically</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: QR + code -->
+    <div class="qr-panel">
+      <div class="code-label">Activation Code</div>
+      <div class="code" id="codeDisplay">····</div>
+      <div class="qr-box">
+        <img id="qrImg" src="" alt="QR Code">
+      </div>
+      <div class="status">
+        <div class="dot" id="dot"></div>
+        <span id="statusText">Waiting for activation…</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Claimed overlay -->
+<div class="claimed" id="claimed">
+  <div class="check">
+    <svg viewBox="0 0 56 56" fill="none">
+      <path d="M12 28L23 39L44 18" stroke="#13224D" stroke-width="5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h2>Player Activated!</h2>
+  <p>Loading your content…</p>
+</div>
+
+<script>
+// ── Set canvas dimensions from config.json ────────────────────────────────
+// autorun.brs also calls sfSetDimensions(w,h) via InjectJavascript
+// to set dimensions before the config.json fetch completes.
+function sfSetDimensions(w, h) {
+  if (!w || !h) return;
+  document.getElementById('sfViewport').setAttribute('content','width='+w+',height='+h);
+  document.documentElement.style.width  = w+'px';
+  document.documentElement.style.height = h+'px';
+  document.body.style.width  = w+'px';
+  document.body.style.height = h+'px';
+}
+window.sfSetDimensions = sfSetDimensions;
+
+fetch('./config.json').then(function(r){return r.json();})
+  .then(function(c){ sfSetDimensions(c.screenWidth, c.screenHeight); })
+  .catch(function(){});
+
+// ── Polling ───────────────────────────────────────────────────────────────
+var API   = 'https://app.screenfleet.io';
+var DEVID = '';
+var COUNT = 0;
+
+function updateStatus(msg, active) {
+  document.getElementById('statusText').textContent = msg;
+  document.getElementById('dot').className = 'dot' + (active ? ' on' : '');
+}
+
+function poll() {
+  if (!DEVID) return;
+  COUNT++;
+  fetch(API+'/functions/pollPlayerActivation', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({device_id: DEVID})
+  }).then(function(r){return r.json();}).then(function(d){
+    if (d.status === 'claimed') {
+      updateStatus('Activated!', true);
+      document.getElementById('claimed').className = 'claimed show';
+    } else if (d.status === 'upgrade_required') {
+      updateStatus('Upgrade required — visit app.screenfleet.io', false);
+    } else {
+      updateStatus('Waiting… ('+COUNT+')', false);
+    }
+  }).catch(function(){ updateStatus('Checking connection…', false); });
+}
+
+// ── Called by autorun.brs via InjectJavascript ────────────────────────────
+window.sfSetActivationCode = function(code, url, deviceId) {
+  DEVID = deviceId;
+  document.getElementById('codeDisplay').textContent = code;
+  // QR image sized to match the rendered img element
+  var img = document.getElementById('qrImg');
+  var px  = img.offsetWidth || 180;
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size='+px+'x'+px+'&margin=0&data='+encodeURIComponent(url);
+  updateStatus('Waiting for activation…', false);
+  setInterval(poll, 12000);
+  setTimeout(poll, 1000);
+};
+</script>
+</body>
+</html>
