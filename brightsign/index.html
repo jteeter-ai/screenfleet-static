@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>ScreenFleet - XT1145 Spare</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 1920px; height: 1080px; overflow: hidden; background: transparent; font-family: "Segoe UI", system-ui, sans-serif; }
+    #hdmi-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    #canvas { position: absolute; top: 0; left: 0; background: transparent; }
+    #status { position: fixed; bottom: 6px; right: 8px; color: rgba(255,255,255,0.1); font: 10px monospace; z-index: 9999; pointer-events: none; }
+
+    /* ── Splash overlay ── */
+    #splash {
+      position: fixed; inset: 0; z-index: 99999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background:
+        radial-gradient(circle at 13px 13px, rgba(135,148,174,0.06) 1.4px, transparent 1.6px) 0 0 / 26px 26px,
+        radial-gradient(ellipse at 50% 42%, #1A2C5A 0%, #13224D 55%, #0E1B3A 100%);
+      transition: opacity 0.8s ease;
+    }
+    #splash.hidden { opacity: 0; pointer-events: none; }
+    .sf-led-mark { display: grid; gap: 1.1vmin; margin-bottom: 5vmin; }
+    .sf-led-row { display: flex; gap: 1.1vmin; justify-content: center; }
+    .sf-dot {
+      width: 2.1vmin; height: 2.1vmin; border-radius: 50%;
+      background: #1d2f5e; transform: scale(0.6); opacity: 0.35;
+    }
+    .sf-dot.on { animation: sfLightUp 0.5s ease-out forwards; }
+    @keyframes sfLightUp {
+      0%   { background: #1d2f5e; transform: scale(0.6); opacity: 0.35; }
+      55%  { background: #FACC16; transform: scale(1.18);
+             box-shadow: 0 0 2vmin rgba(250,204,22,0.9), 0 0 0.6vmin rgba(250,204,22,1); opacity: 1; }
+      100% { background: #FACC16; transform: scale(1);
+             box-shadow: 0 0 1.3vmin rgba(250,204,22,0.55); opacity: 1; }
+    }
+    .sf-wordmark {
+      font-size: 9vmin; font-weight: 700; letter-spacing: -0.01em; line-height: 1;
+      opacity: 0; transform: translateY(2vmin);
+      animation: sfRise 0.9s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: 1.7s;
+    }
+    .sf-wordmark .sf-screen { color: #ffffff; }
+    .sf-wordmark .sf-fleet  { color: #B9C4DC; font-weight: 600; }
+    .sf-tagline {
+      margin-top: 2.4vmin; font-size: 2.3vmin; font-weight: 500;
+      letter-spacing: 0.04em; color: #8794AE;
+      opacity: 0; animation: sfFadeIn 1s ease forwards; animation-delay: 2.3s;
+    }
+    .sf-version {
+      margin-top: 1.2vmin; font-size: 1.7vmin; font-weight: 500;
+      letter-spacing: 0.08em; color: #5B6B8C;
+      opacity: 0; animation: sfFadeIn 1s ease forwards; animation-delay: 2.6s;
+    }
+    .sf-loader {
+      position: absolute; bottom: 7vmin;
+      width: 22vmin; height: 0.5vmin; border-radius: 3px;
+      background: rgba(135,148,174,0.18); overflow: hidden;
+      opacity: 0; animation: sfFadeIn 0.8s ease forwards; animation-delay: 2.8s;
+    }
+    .sf-loader::before {
+      content: ""; position: absolute; top: 0; left: -40%; width: 40%; height: 100%;
+      border-radius: 3px; background: linear-gradient(90deg, transparent, #FACC16, transparent);
+      animation: sfSweep 1.4s ease-in-out infinite; animation-delay: 3.0s;
+    }
+    @keyframes sfRise   { to { opacity: 1; transform: translateY(0); } }
+    @keyframes sfFadeIn { to { opacity: 1; } }
+    @keyframes sfSweep  { 0% { left: -40%; } 100% { left: 100%; } }
+  </style>
+</head>
+<body>
+  <!-- Splash overlay — hidden by player.js after content renders (min 3s) -->
+  <div id="splash">
+    <div class="sf-led-mark" id="sfLedMark"></div>
+    <div class="sf-wordmark">
+      <span class="sf-screen">Screen</span><span class="sf-fleet">Fleet</span>
+    </div>
+    <div class="sf-tagline">A product of Legion LED Trucks, LLC</div>
+    <div class="sf-version">v31</div>
+    <div class="sf-loader"></div>
+  </div>
+
+  <div id="hdmi-layer"></div>
+  <div id="canvas"></div>
+  <div id="status">ScreenFleet v31</div>
+
+  <script>
+    // LED dot animation — runs immediately on DOM load, no JS dependency
+    (function() {
+      var PATTERN = [
+        "01110 00 1111",
+        "10000 00 1000",
+        "10000 00 1000",
+        "01110 00 1110",
+        "00001 00 1000",
+        "10001 00 1000",
+        "01110 00 1000",
+      ].map(function(r) { return r.replace(/\s/g, ""); });
+      var mark = document.getElementById("sfLedMark");
+      var lit = [];
+      PATTERN.forEach(function(rowStr) {
+        var row = document.createElement("div");
+        row.className = "sf-led-row";
+        rowStr.split("").forEach(function(cell) {
+          var dot = document.createElement("div");
+          dot.className = "sf-dot";
+          row.appendChild(dot);
+          if (cell === "1") lit.push(dot);
+        });
+        mark.appendChild(row);
+      });
+      lit.forEach(function(dot, i) {
+        setTimeout(function() { dot.classList.add("on"); }, 120 + i * 45);
+      });
+    })();
+  </script>
+
+  <script>window.__SF_NATIVE_PACKAGE__ = true;</script>
+  <script src="./player.js"></script>
+</body>
+</html>
