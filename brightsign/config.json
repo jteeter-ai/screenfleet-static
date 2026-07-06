@@ -1,15 +1,9 @@
 {
   "apiOrigin": "https://app.screenfleet.io",
-  "screenToken": "8d26b92c-a0f9-46d6-925c-968a87f5efe1",
-  "screenId": "6a29ba9faf330cca377be31e",
-  "screenWidth": 2560,
-  "screenHeight": 512,
-  "versionCheckFn": "screenVersionCheck",
-  "payloadFn": "screenPayload",
+  "screenToken": "",
+  "screenId": "",
+  "screenWidth": 1920,
+  "screenHeight": 1080,
   "pollIntervalMs": 60000,
-  "generatedAt": "2026-06-23T11:50:40.681Z",
-  "assetId": "69c423ed36fbf7d225632c73",
-  "assetName": "Spark 714 P3.9",
-  "serialNumber": "",
   "packageVersion": "v31b"
 }
