@@ -15,7 +15,8 @@
 '   roVideoMode.SetMode(), GetHdmiInputStatus(), SetVideoZOrder()
 '   roDeviceInfo.GetDeviceUniqueId(), GetModel(), GetDisplayMode()
 '   roVideoPlayer, roVideoInput, roAssetFetcher.Download()
-'   String.Tokenize() on primitives, Str() without LTrim in JS strings
+'   String.Tokenize() on primitives, Str() in JS strings (use SfNumStr)
+'   LTrim() - does not exist in BrightScript: &he0 crash, reboot loop
 
 Function ReadConfig() As Object
     xfer = CreateObject("roUrlTransfer")
@@ -147,8 +148,8 @@ Sub WriteConfig(apiOrigin As String, screenToken As String, screenId As String, 
     cfgJson = cfgJson + "  " + q + "apiOrigin" + q + ": " + q + apiOrigin + q + "," + Chr(10)
     cfgJson = cfgJson + "  " + q + "screenToken" + q + ": " + q + screenToken + q + "," + Chr(10)
     cfgJson = cfgJson + "  " + q + "screenId" + q + ": " + q + screenId + q + "," + Chr(10)
-    cfgJson = cfgJson + "  " + q + "screenWidth" + q + ": " + LTrim(Str(scrW)) + "," + Chr(10)
-    cfgJson = cfgJson + "  " + q + "screenHeight" + q + ": " + LTrim(Str(scrH)) + "," + Chr(10)
+    cfgJson = cfgJson + "  " + q + "screenWidth" + q + ": " + SfNumStr(scrW) + "," + Chr(10)
+    cfgJson = cfgJson + "  " + q + "screenHeight" + q + ": " + SfNumStr(scrH) + "," + Chr(10)
     cfgJson = cfgJson + "  " + q + "pollIntervalMs" + q + ": 60000," + Chr(10)
     cfgJson = cfgJson + "  " + q + "packageVersion" + q + ": " + q + "v31b" + q + Chr(10)
     cfgJson = cfgJson + "}"
@@ -200,7 +201,7 @@ Sub RunActivationFlow(h As Object, msgPort As Object, apiOrigin As String, scrW 
             If Type(loadData) = "roAssociativeArray" Then
                 If loadData.reason = "load-complete" Then
                     Print "[SF-ACTIVATE] activate.html ready"
-                    h.InjectJavascript("sfSetDimensions(" + LTrim(Str(scrW)) + "," + LTrim(Str(scrH)) + ")")
+                    h.InjectJavascript("sfSetDimensions(" + SfNumStr(scrW) + "," + SfNumStr(scrH) + ")")
                     pageReady = true
                 End If
             End If
@@ -245,7 +246,7 @@ Sub RunActivationFlow(h As Object, msgPort As Object, apiOrigin As String, scrW 
     Print "[SF-ACTIVATE] URL: " + activateUrl
 
     ' ── Step 3: Inject code + QR into page ───────────────────────────────────
-    ' LTrim() strips leading space that BrightScript's Str() adds
+    ' SfNumStr() strips the leading space that BrightScript's Str() adds
     ' Inject code text first (simple), then full sfSetActivationCode
     h.InjectJavascript("document.getElementById('codeDisplay').textContent=" + q + activationCode + q)
     jsCall = "sfSetActivationCode(" + q + activationCode + q + "," + q + activateUrl + q + "," + q + deviceId + q + ")"
@@ -263,7 +264,7 @@ Sub RunActivationFlow(h As Object, msgPort As Object, apiOrigin As String, scrW 
             If Type(waitData) = "roAssociativeArray" Then
                 If waitData.reason = "load-complete" Then
                     Print "[SF-ACTIVATE] Page reloaded — re-injecting"
-                    h.InjectJavascript("sfSetDimensions(" + LTrim(Str(scrW)) + "," + LTrim(Str(scrH)) + ")")
+                    h.InjectJavascript("sfSetDimensions(" + SfNumStr(scrW) + "," + SfNumStr(scrH) + ")")
                     h.InjectJavascript("document.getElementById('codeDisplay').textContent=" + q + activationCode + q)
                     h.InjectJavascript(jsCall)
                 End If
@@ -392,7 +393,7 @@ Sub Main()
 
     ' Build the config injection JS. player.js cannot fetch() file:// URLs,
     ' so autorun.brs injects config directly via window.sfSetConfig().
-    cfgInject = "sfSetConfig(" + q + apiOrigin + q + "," + q + safeScreenId + q + "," + q + safeToken + q + "," + LTrim(Str(scrW)) + "," + LTrim(Str(scrH)) + ")"
+    cfgInject = "sfSetConfig(" + q + apiOrigin + q + "," + q + safeScreenId + q + "," + q + safeToken + q + "," + SfNumStr(scrW) + "," + SfNumStr(scrH) + ")"
 
     ' Inject config repeatedly for the first several seconds. player.js polls
     ' window.__SF_CONFIG__ every 500ms for up to 15s, so even if we miss the
@@ -472,3 +473,12 @@ Sub Main()
 
     End While
 End Sub
+
+' Number -> string without the leading space Str() adds (BrightScript has no LTrim).
+Function SfNumStr(n As Dynamic) As String
+    s = Str(n)
+    While Len(s) > 0 And Left(s, 1) = " "
+        s = Mid(s, 2)
+    End While
+    Return s
+End Function
