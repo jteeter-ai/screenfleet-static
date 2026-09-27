@@ -212,10 +212,11 @@ function renderZone(canvas, hdmiLayer, zone) {
 
 // ── Canvas Creative Renderer ──────────────────────────────────────────────────
 // Renders a CanvasCreative (layers_json) into a container element.
-// Handles all layer types from the Studio: image, video, text, shape,
-// and hdmi_input (renders as tv:brightsign.biz/hdmi video element).
+// Handles all layer types from the Studio: image, video, text, shape, slideshow,
+// weather_widget and hdmi_input (renders as tv:brightsign.biz/hdmi video element).
 // Called from playTrack when item.content_type === 'canvas_creative'.
-function renderCanvasCreative(container, creative, zone) {
+// onLayerCycle(layerId) is called each time a slideshow finishes a full cycle.
+function renderCanvasCreative(container, creative, zone, onLayerCycle) {
   if (!creative || !creative.layers_json) {
     console.warn('[SF-CC] No layers_json in creative');
     return;
@@ -345,6 +346,16 @@ function renderCanvasCreative(container, creative, zone) {
       if (layer.opacity != null && layer.opacity !== 1) d.style.opacity = layer.opacity;
       d.textContent = p.text || '';
       container.appendChild(d);
+      return;
+    }
+
+    // ── Slideshow layer ────────────────────────────────────────────────────────
+    if (layer.type === 'slideshow') {
+      var ss = document.createElement('div');
+      ss.style.cssText = baseStyle + 'background:#000;';
+      if (layer.opacity != null && layer.opacity !== 1) ss.style.opacity = layer.opacity;
+      container.appendChild(ss);
+      renderSlideshow(ss, p, onLayerCycle ? function() { onLayerCycle(layer.id); } : null);
       return;
     }
 
@@ -514,6 +525,79 @@ function renderCanvasCreative(container, creative, zone) {
   });
 }
 
+// ── Slideshow ─────────────────────────────────────────────────────────────────
+// Port of the Studio's SlideshowLayer.jsx: images and videos in one layer, each
+// shown for its dwell time (videos set to "play to end" advance when they end),
+// optional fade. onCycle() fires each time the last item hands back to the first.
+function renderSlideshow(el, p, onCycle) {
+  var items = (Array.isArray(p.items) && p.items.length) ? p.items
+    : (Array.isArray(p.slides) ? p.slides.map(function(s) {
+        return { id: s.id, mediaType: 'image', src: s.src, name: s.name, dwellSeconds: s.dwellSeconds, dwellMode: 'fixed' };
+      }) : []);
+  items = items.filter(function(it) { return it && it.src; });
+  if (!items.length) { console.warn('[SF-SS] Slideshow has no media'); return; }
+
+  var defaultDwell = Math.max(1, p.defaultDwellSeconds != null ? p.defaultDwellSeconds : 5);
+  var fit = p.objectFit || 'cover';
+  var muteVideos = p.muteVideos !== false;
+  var loopVideos = p.loopVideos === true;
+  var fade = p.transition === 'fade';
+  var idx = 0, timer = null;
+  console.warn('[SF-SS] Slideshow items=' + items.length + ' dwell=' + defaultDwell + 's');
+
+  // Timers outlive the element when the playlist moves on; do nothing once it's gone.
+  function schedule(fn, ms) {
+    clearTimeout(timer);
+    timer = setTimeout(function() { if (el.isConnected) fn(); }, ms);
+  }
+  function release(node) {
+    if (node.tagName === 'VIDEO') { node.pause(); node.removeAttribute('src'); node.load(); }
+    if (node.parentNode) node.parentNode.removeChild(node);
+  }
+  function advance() {
+    if (items.length <= 1) { if (onCycle) onCycle(); return; }
+    var next = (idx + 1) % items.length;
+    if (next === 0 && onCycle) onCycle();
+    if (!el.isConnected) return; // onCycle may have moved the playlist on
+    idx = next;
+    show();
+  }
+  function show() {
+    var item = items[idx];
+    var media;
+    if (item.mediaType === 'video') {
+      media = document.createElement('video');
+      media.autoplay = true;
+      media.muted = muteVideos;
+      media.playsInline = true;
+      media.loop = loopVideos && items.length === 1;
+      if (item.dwellMode !== 'fixed') media.onended = function() { clearTimeout(timer); advance(); };
+      media.onerror = function() { schedule(advance, 1500); };
+    } else {
+      media = document.createElement('img');
+      media.onerror = function() { media.style.display = 'none'; schedule(advance, 1500); };
+    }
+    media.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:' + fit + ';display:block;' +
+      (fade ? 'opacity:0;transition:opacity .3s ease;' : '');
+    media.src = item.src;
+    var old = Array.prototype.slice.call(el.childNodes);
+    el.appendChild(media);
+    if (fade) {
+      requestAnimationFrame(function() { media.style.opacity = '1'; });
+      setTimeout(function() { old.forEach(release); }, 350);
+    } else {
+      old.forEach(release);
+    }
+    if (items.length <= 1) return; // a single item just stays up
+    // Warm the cache for the next image so the cut is clean.
+    var upcoming = items[(idx + 1) % items.length];
+    if (upcoming.mediaType !== 'video') { var pre = new Image(); pre.src = upcoming.src; }
+    if (item.mediaType === 'video' && item.dwellMode !== 'fixed') schedule(advance, 60000); // safety if 'ended' never fires
+    else schedule(advance, Math.max(1, item.dwellSeconds != null ? item.dwellSeconds : defaultDwell) * 1000);
+  }
+  show();
+}
+
 function playTrack(el, zone, items, index) {
   var item = items[index % items.length];
   if (!item) return;
@@ -529,16 +613,36 @@ function playTrack(el, zone, items, index) {
       if (hasHdmi) {
         el.style.background = 'transparent';
       }
-      renderCanvasCreative(el, cc, zone);
-    } else {
-      console.warn('[SF] canvas_creative item missing layers_json. id=' + item.canvas_creative_id);
     }
     // Only advance the playlist if there are MULTIPLE items.
     // A single looping canvas creative (HDMI + widgets) must stay put forever —
     // re-rendering every 8s causes audio blips on HDMI and weather widget flicker.
     var next = index + 1;
     var hasMore = items.length > 1 && (next < items.length || (!zone.playback_track || zone.playback_track.loop !== false));
-    if (hasMore) {
+    // Sync mode "shortest"/"longest" (set in Studio): move on when the slideshows finish
+    // their cycle instead of after the item's duration, same as the web player.
+    var sync = (cc && cc.sync_mode) || 'independent';
+    var cyclic = (cc && cc.layers_json ? cc.layers_json : []).filter(function(l) { return l.type === 'slideshow' || l.type === 'video_carousel'; });
+    var followCycles = hasMore && sync !== 'independent' && cyclic.length > 0 &&
+      cyclic.every(function(l) { return l.type === 'slideshow'; }); // video_carousel isn't rendered here yet
+    var onLayerCycle = null;
+    if (followCycles) {
+      var doneLayers = {}, moved = false;
+      onLayerCycle = function(layerId) {
+        if (moved || !el.isConnected) return;
+        doneLayers[layerId] = true;
+        if (sync === 'shortest' || Object.keys(doneLayers).length >= cyclic.length) {
+          moved = true;
+          playTrack(el, zone, items, next);
+        }
+      };
+    }
+    if (cc && cc.layers_json) {
+      renderCanvasCreative(el, cc, zone, onLayerCycle);
+    } else {
+      console.warn('[SF] canvas_creative item missing layers_json. id=' + item.canvas_creative_id);
+    }
+    if (hasMore && !followCycles) {
       var dur = ((item.duration != null ? item.duration : 8)) * 1000;
       zoneTimers[zone.id + '_' + index] = setTimeout(function() { playTrack(el, zone, items, next); }, dur);
     }
