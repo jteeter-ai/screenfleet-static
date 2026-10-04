@@ -1,0 +1,13 @@
+{
+  "apiOrigin": "https://app.screenfleet.io",
+  "screenToken": "",
+  "screenId": "",
+  "screenWidth": 1920,
+  "screenHeight": 1080,
+  "payloadFn": "screenPayload",
+  "pollIntervalMs": 60000,
+  "packageVersion": "v32",
+  "activationMode": true,
+  "otaEnabled": false,
+  "updateBaseUrl": ""
+}

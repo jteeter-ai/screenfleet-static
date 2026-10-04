@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ScreenFleet Player</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#000; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; -webkit-user-select:none; user-select:none; }
+
+  /* The render root. #canvas holds all non-HDMI content; #hdmi-layer holds
+     the hardware video plane(s). Both are absolutely positioned at 0,0 and
+     the player sizes #canvas to the screen dimensions from the manifest. */
+  #stage { position:absolute; inset:0; overflow:hidden; background:#000; }
+  #canvas { position:absolute; left:0; top:0; }
+  #hdmi-layer { position:absolute; inset:0; pointer-events:none; }
+
+  /* Splash — covers everything until first content renders (min 3s). */
+  #splash {
+    position:absolute; inset:0; z-index:99999;
+    display:flex; align-items:center; justify-content:center;
+    background:#13224D;
+    transition: opacity .9s ease;
+  }
+  #splash.hidden { opacity:0; }
+  #splash .wrap { text-align:center; }
+  #splash .logo { font:700 44px 'Segoe UI', sans-serif; letter-spacing:-0.02em; color:#fff; }
+  #splash .logo .f { color:#F2C230; }
+  #splash .sub { margin-top:14px; color:#6B7BA0; font:500 17px 'Segoe UI', sans-serif; }
+  #splash .ver { margin-top:8px; color:#3a4a6a; font:500 12px 'Segoe UI', sans-serif; }
+  #splash .dots { margin-top:22px; display:flex; gap:9px; justify-content:center; }
+  #splash .dots i { width:9px; height:9px; border-radius:50%; background:#2E436F; display:inline-block; animation: sfpulse 1.4s infinite ease-in-out; }
+  #splash .dots i:nth-child(2){ animation-delay:.2s; }
+  #splash .dots i:nth-child(3){ animation-delay:.4s; }
+  @keyframes sfpulse { 0%,80%,100%{ opacity:.3; transform:scale(.8);} 40%{ opacity:1; transform:scale(1);} }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div id="hdmi-layer"></div>
+    <div id="canvas"></div>
+  </div>
+
+  <div id="splash">
+    <div class="wrap">
+      <div class="logo">Screen<span class="f">Fleet</span></div>
+      <div class="sub">Starting player&hellip;</div>
+      <div class="ver">v32 &middot; Node-native</div>
+      <div class="dots"><i></i><i></i><i></i></div>
+    </div>
+  </div>
+
+  <script src="player.js"></script>
+</body>
+</html>
