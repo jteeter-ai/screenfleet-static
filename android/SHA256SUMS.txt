@@ -1,2 +1,4 @@
-4d66c3cca1c28eaf208b996621b49fec3d203f00daf3ccac32476fb633784981  ScreenFleet-Player-2.0.0-dev.apk
+b7d17198c0f70a2c095ff6392be75df3b436d6a3d184a73123dd44e0a7cf7954  latest.apk
+b7d17198c0f70a2c095ff6392be75df3b436d6a3d184a73123dd44e0a7cf7954  releases/ScreenFleet-Player-2.1.0.apk
 4d66c3cca1c28eaf208b996621b49fec3d203f00daf3ccac32476fb633784981  dev.apk
+4d66c3cca1c28eaf208b996621b49fec3d203f00daf3ccac32476fb633784981  ScreenFleet-Player-2.0.0-dev.apk
