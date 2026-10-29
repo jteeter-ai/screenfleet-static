@@ -21,9 +21,10 @@ Versioned folders keep each release immutable for rollback.
 
 WHAT IS IN autorun.zip
 ----------------------
-A password-protected ("test") zip, built the BrightSign way (roBrightPackage
-/ "Make Autorun Zip"), containing SEVEN files at the archive root (see
-1.0.4/README.txt for hashes). Rebuild for a new release with
+A plain (NOT password-protected) zip containing SEVEN files at the archive root
+(see 1.0.8/README.txt for hashes). Since OS 7.0.60 the BrightSign OS unpacks a
+root autorun.zip itself and cannot open a password-protected one; verified on
+Truck 121e (XT1145, OS 9.1.96) via Partner App / App URL, Oct 29 2026. Rebuild for a new release with
 build-autorun-zip.sh. The v32 notes below describe the same layout; 1.0.4 adds
 sf-agent.js (NovaStar VX agent), remote updates, and the QR setup screen:
 
