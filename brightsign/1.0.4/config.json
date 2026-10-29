@@ -1,0 +1,15 @@
+{
+  "apiOrigin": "https://app.screenfleet.io",
+  "screenToken": "",
+  "screenId": "",
+  "screenWidth": 1920,
+  "screenHeight": 1080,
+  "payloadFn": "screenPayload",
+  "pollIntervalMs": 60000,
+  "otaEnabled": true,
+  "updateUrl": "https://app.screenfleet.io/functions/playerUpdate",
+  "updateChannel": "stable",
+  "agentEnabled": true,
+  "packageVersion": "1.0.4",
+  "activationMode": true
+}

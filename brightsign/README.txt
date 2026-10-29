@@ -1,5 +1,5 @@
-ScreenFleet BrightSign Player — v32 (Node-native)
-=================================================
+ScreenFleet BrightSign Player — 1.0.4 (Node-native)
+===================================================
 This folder hosts the canonical ScreenFleet BrightSign player package,
 served over HTTPS at https://files.screenfleet.io/brightsign/ .
 
@@ -11,7 +11,8 @@ ScreenFleet CMS.
 CANONICAL URLs
 --------------
   https://files.screenfleet.io/brightsign/autorun.zip   <- App URL / Partner Gallery
-  https://files.screenfleet.io/brightsign/v32/           <- pinned v32 (rollback-safe)
+  https://files.screenfleet.io/brightsign/1.0.4/         <- pinned 1.0.4 (current)
+  https://files.screenfleet.io/brightsign/v32/           <- v32 (previous, archived)
   https://files.screenfleet.io/brightsign/v31b/          <- previous version (archived)
 
 The root autorun.zip always points at the CURRENT shipping version.
@@ -20,7 +21,10 @@ Versioned folders keep each release immutable for rollback.
 WHAT IS IN autorun.zip
 ----------------------
 A password-protected ("test") zip, built the BrightSign way (roBrightPackage
-/ "Make Autorun Zip"), containing SIX files at the archive root:
+/ "Make Autorun Zip"), containing SEVEN files at the archive root (see
+1.0.4/README.txt for hashes). Rebuild for a new release with
+build-autorun-zip.sh. The v32 notes below describe the same layout; 1.0.4 adds
+sf-agent.js (NovaStar VX agent), remote updates, and the QR setup screen:
 
   autozip.brs    BrightSign's canonical package unpacker (their sample, verbatim).
                  On boot it unpacks autorun.zip to the drive root, creates the
@@ -45,8 +49,9 @@ HOW A PLAYER GETS THIS PACKAGE
 ------------------------------
 In player setup: Player Settings -> Publishing Mode -> "App URL", enter
   https://files.screenfleet.io/brightsign/autorun.zip
-The player downloads the zip, autozip.brs unpacks it, reboots, and shows an
-activation code. Claim the code against the asset in ScreenFleet.
+The player downloads the zip, autozip.brs unpacks it, reboots, and shows the
+ScreenFleet setup screen (QR code + activation code). The customer scans it
+and finishes setup on their phone.
 
 After Partner Gallery listing, "ScreenFleet" can be picked from the partner
 app list instead of typing the URL.
@@ -58,5 +63,5 @@ GENERIC activation package. Per-screen binding happens at activation time and
 is written to the SD card's config.json on the device, never in this repo.
 
 API: https://app.screenfleet.io
-Package built: v32 Node-native. autozip.brs = BrightSign sample (sha256
+Package built: 1.0.4 (Oct 29, 2026). Previous: v32 Node-native. autozip.brs = BrightSign sample (sha256
 bcf19398c8e90d91923bcd08f32119c9c1bf0ff7f1c8dc83a63517d9304af331).
