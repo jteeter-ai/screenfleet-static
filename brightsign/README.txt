@@ -1,4 +1,4 @@
-ScreenFleet BrightSign Player — 1.0.4 (Node-native)
+ScreenFleet BrightSign Player — 1.0.8 (Node-native)
 ===================================================
 This folder hosts the canonical ScreenFleet BrightSign player package,
 served over HTTPS at https://files.screenfleet.io/brightsign/ .
@@ -11,7 +11,8 @@ ScreenFleet CMS.
 CANONICAL URLs
 --------------
   https://files.screenfleet.io/brightsign/autorun.zip   <- App URL / Partner Gallery
-  https://files.screenfleet.io/brightsign/1.0.4/         <- pinned 1.0.4 (current)
+  https://files.screenfleet.io/brightsign/1.0.8/         <- pinned 1.0.8 (current)
+  https://files.screenfleet.io/brightsign/1.0.4/         <- pinned 1.0.4 (previous)
   https://files.screenfleet.io/brightsign/v32/           <- v32 (previous, archived)
   https://files.screenfleet.io/brightsign/v31b/          <- previous version (archived)
 
