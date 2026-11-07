@@ -20,7 +20,7 @@
   <div id="ready" hidden>
     <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="#FD703B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
     <h1>You're all set</h1>
-    <p>We sent a setup link to <strong id="email"></strong>. Open it to set your password, then pair your first TV:</p>
+    <p><span id="trialline">Your free trial runs until <strong id="ends">two weeks from today</strong>. </span>We sent a setup link to <strong id="email"></strong> — open it to set your password, then pair your first TV:</p>
     <ol>
       <li>Install the ScreenFleet player on the TV's Android or Fire TV stick and open it.</li>
       <li>It shows a QR code and a short code.</li>
@@ -32,7 +32,15 @@
 <script>
 (function () {
   var API = 'https://legion-screenfleet.base44.app/api/apps/699e82a2479ad26532b0b448/functions/directSignup';
-  var id = new URLSearchParams(location.search).get('session_id') || '';
+  var q = new URLSearchParams(location.search);
+  var id = q.get('session_id') || '';
+  if (q.get('trial')) {
+    document.getElementById('email').textContent = q.get('email') || 'your email';
+    var e = Date.parse(q.get('ends') || '');
+    if (e) document.getElementById('ends').textContent = new Date(e).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('working').hidden = true; document.getElementById('ready').hidden = false;
+    return;
+  }
   var tries = 0;
   function show(which) { ['working', 'ready', 'fail'].forEach(function (k) { document.getElementById(k).hidden = k !== which; }); }
   function fail(msg) { document.getElementById('failmsg').textContent = msg; show('fail'); }
@@ -40,7 +48,7 @@
     fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'status', session_id: id }) })
       .then(function (r) { return r.json(); })
       .then(function (r) {
-        if (r && r.ok && r.state === 'ready') { document.getElementById('email').textContent = r.email || 'your email'; show('ready'); return; }
+        if (r && r.ok && r.state === 'ready') { document.getElementById('email').textContent = r.email || 'your email'; document.getElementById('trialline').hidden = true; show('ready'); return; }
         if (r && r.ok === false) { fail(r.message || "We couldn't find that checkout."); return; }
         next();
       }).catch(next);

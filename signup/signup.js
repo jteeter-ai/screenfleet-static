@@ -80,25 +80,29 @@
   }
   $('minus').onclick = function () { step(-1); }; $('plus').onclick = function () { step(1); };
 
-  if (params.get('cancelled')) { $('err').hidden = false; $('err').textContent = 'Checkout was cancelled. Nothing was charged.'; }
+  
 
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var f = e.target, err = $('err'), go = $('go');
     if (!f.reportValidity()) return;
-    err.hidden = true; go.disabled = true; go.textContent = 'Opening secure checkout…';
+    err.hidden = true; go.disabled = true; go.textContent = 'Creating your account…';
     call({
       action: 'start', company_name: f.company_name.value, owner_name: f.owner_name.value, email: f.email.value,
-      phone: f.phone.value, industry: f.industry.value, plan_key: state.planKey, quantity: state.qty,
+      phone: f.phone.value, industry: f.industry.value, website: f.website.value, plan_key: state.planKey, quantity: state.qty,
       extra_screens: state.extras, interval: state.interval,
     }).then(function (r) {
+      if (r && r.ok && r.state === 'ready') {
+        location.href = './welcome/?trial=1&email=' + encodeURIComponent(r.email || '') + '&ends=' + encodeURIComponent(r.trial_ends_at || '');
+        return;
+      }
       if (r && r.ok && r.url) { location.href = r.url; return; }
       err.hidden = false; err.textContent = (r && r.message) || 'Something went wrong. Please try again.';
       if (r && r.signin_url) err.innerHTML = esc(r.message) + ' <a href="' + esc(r.signin_url) + '">Sign in</a>';
-      go.disabled = false; go.textContent = 'Continue to payment';
+      go.disabled = false; go.textContent = 'Start free trial';
     }).catch(function () {
       err.hidden = false; err.textContent = 'Could not reach ScreenFleet. Check your connection and try again.';
-      go.disabled = false; go.textContent = 'Continue to payment';
+      go.disabled = false; go.textContent = 'Start free trial';
     });
   });
 
