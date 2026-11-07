@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScreenFleet Pricing & Signup</title>
+<meta name="description" content="Digital signage for bars, restaurants and golf courses. Put your specials on every TV and change them from your phone. Plans from $19 per screen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="./signup.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap row">
+    <a class="logo" href="./" aria-label="ScreenFleet">
+      <svg viewBox="0 0 96 96" width="32" height="32" aria-hidden="true">
+        <g fill="#2B4F85"><rect x="50" y="8" width="17" height="17" rx="4"/><rect x="71" y="8" width="17" height="17" rx="4"/><rect x="8" y="29" width="17" height="17" rx="4"/><rect x="71" y="29" width="17" height="17" rx="4"/><rect x="8" y="50" width="17" height="17" rx="4"/><rect x="29" y="50" width="17" height="17" rx="4"/><rect x="8" y="71" width="17" height="17" rx="4"/><rect x="29" y="71" width="17" height="17" rx="4"/><rect x="50" y="71" width="17" height="17" rx="4"/></g>
+        <g fill="#FFFFFF"><rect x="8" y="8" width="17" height="17" rx="4"/><rect x="29" y="8" width="17" height="17" rx="4"/><rect x="29" y="29" width="17" height="17" rx="4"/><rect x="50" y="29" width="17" height="17" rx="4"/><rect x="50" y="50" width="17" height="17" rx="4"/><rect x="71" y="50" width="17" height="17" rx="4"/></g>
+        <rect x="71" y="71" width="17" height="17" rx="4" fill="#FD703B"/>
+      </svg>
+      <span class="wordmark"><b>Screen</b><i>Fleet</i></span>
+    </a>
+    <a class="signin" href="https://app.screenfleet.io/">Sign in</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Turn your TVs into <span class="o">sales.</span></h1>
+    <p class="lede">Put your specials, events and promos on every TV in the house, and change them from your phone in seconds.</p>
+    <ul class="perks">
+      <li><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A5E2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg></span>Update from your phone</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A5E2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg></span>Live in minutes</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A5E2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>Works with Android &amp; Fire TV sticks</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A5E2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0"/><path d="M5.5 12.5a10 10 0 0 1 13 0"/><path d="M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19.5" r="0.8"/></svg></span>See which TVs are online</li>
+    </ul>
+  </div>
+</section>
+
+<main class="wrap">
+  <section class="card plans-card">
+    <h2 class="step">1. Choose a plan</h2>
+    <div class="toggle" role="group" aria-label="Billing interval">
+      <button type="button" data-interval="month" aria-pressed="true">Monthly</button>
+      <button type="button" data-interval="year" aria-pressed="false">Yearly · 2 months free</button>
+    </div>
+    <div id="plans" class="plans" aria-live="polite"><p class="muted center">Loading plans…</p></div>
+    <div id="qtybar" class="qtybar" hidden>
+      <div class="qty">
+        <span id="qtylabel">Screens</span>
+        <button type="button" id="minus" aria-label="Fewer screens">−</button>
+        <span id="qty" class="qtyn">1</span>
+        <button type="button" id="plus" aria-label="More screens">+</button>
+      </div>
+      <div class="total"><small id="summary"></small><strong id="total"></strong></div>
+      <p id="tip" class="tip" hidden></p>
+    </div>
+  </section>
+
+  <form id="form" class="grid2" novalidate>
+    <section class="card">
+      <h2 class="step">2. Your business</h2>
+      <div class="fields">
+        <label>Business name<input name="company_name" required autocomplete="organization" placeholder="The Players Club"></label>
+        <label>Type of business
+          <select name="industry">
+            <option value="">Choose…</option>
+            <option value="bar_restaurant">Bar or restaurant</option>
+            <option value="golf_club">Golf course or country club</option>
+            <option value="retail">Retail store</option>
+            <option value="hospitality">Hotel or hospitality</option>
+            <option value="church">Church</option>
+            <option value="office">Office or lobby</option>
+            <option value="education">School or campus</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label>Your name<input name="owner_name" required autocomplete="name"></label>
+        <label>Phone (optional)<input name="phone" type="tel" autocomplete="tel"></label>
+        <label class="full">Email (you'll sign in with this)<input name="email" type="email" required autocomplete="email"></label>
+      </div>
+    </section>
+    <section class="card pay">
+      <h2 class="step light">3. Pay securely</h2>
+      <p>You'll pay by card on Stripe's secure page. Your account is created as soon as payment goes through.</p>
+      <p id="err" class="err" role="alert" hidden></p>
+      <button id="go" type="submit" class="cta">Continue to payment</button>
+      <p class="small">Already a customer? <a href="https://app.screenfleet.io/Billing">Change your plan in Billing</a>.</p>
+    </section>
+  </form>
+</main>
+
+<footer class="wrap foot">
+  Prices in USD. Cancel any time from Billing. Running billboard trucks or trailers? <a href="https://ledtrucks.com">Talk to Legion LED Trucks</a>.
+  · <a href="../privacy/">Privacy</a>
+</footer>
+<script src="./signup.js"></script>
+</body>
+</html>

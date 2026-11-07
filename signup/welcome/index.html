@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome to ScreenFleet</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="../signup.css">
+</head>
+<body>
+<header class="top"><div class="wrap row">
+  <span class="logo"><span class="wordmark"><b>Screen</b><i>Fleet</i></span></span>
+  <a class="signin" href="https://app.screenfleet.io/">Sign in</a>
+</div></header>
+<main class="done" aria-live="polite">
+  <div id="working"><div class="spin" role="status" aria-label="Working"></div>
+    <h1>Setting up your account…</h1><p class="muted">Payment received. This takes a few seconds.</p></div>
+  <div id="ready" hidden>
+    <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="#FD703B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+    <h1>You're all set</h1>
+    <p>We sent a setup link to <strong id="email"></strong>. Open it to set your password, then pair your first TV:</p>
+    <ol>
+      <li>Install the ScreenFleet player on the TV's Android or Fire TV stick and open it.</li>
+      <li>It shows a QR code and a short code.</li>
+      <li>Scan the QR code with your phone (or go to app.screenfleet.io/activate) and sign in. Done.</li>
+    </ol>
+  </div>
+  <div id="fail" hidden><h1>Almost there</h1><p id="failmsg" class="muted"></p></div>
+</main>
+<script>
+(function () {
+  var API = 'https://legion-screenfleet.base44.app/api/apps/699e82a2479ad26532b0b448/functions/directSignup';
+  var id = new URLSearchParams(location.search).get('session_id') || '';
+  var tries = 0;
+  function show(which) { ['working', 'ready', 'fail'].forEach(function (k) { document.getElementById(k).hidden = k !== which; }); }
+  function fail(msg) { document.getElementById('failmsg').textContent = msg; show('fail'); }
+  function poll() {
+    fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'status', session_id: id }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r && r.ok && r.state === 'ready') { document.getElementById('email').textContent = r.email || 'your email'; show('ready'); return; }
+        if (r && r.ok === false) { fail(r.message || "We couldn't find that checkout."); return; }
+        next();
+      }).catch(next);
+  }
+  function next() {
+    if (++tries < 40) setTimeout(poll, 3000);
+    else fail('This is taking longer than usual. Check your email in a few minutes, or contact support@screenfleet.io.');
+  }
+  if (id) poll(); else fail('Missing checkout session.');
+})();
+</script>
+</body>
+</html>
