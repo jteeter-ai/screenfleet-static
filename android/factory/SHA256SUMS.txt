@@ -1,0 +1,2 @@
+78f263ecc5d1f9354c9f1e4fedfd885042c2ddff43cca104d800d5e612c204e3  ScreenFleet-Player-2.5.2.apk
+972f9a46153b84f024780943ae7e272d8468cfae2deec3527eed7ff472b72129  privapp-permissions-com.screenfleet.player.xml

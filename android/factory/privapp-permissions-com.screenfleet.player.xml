@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Install next to the APK's partition: /system/priv-app/ScreenFleet/ScreenFleet.apk
+     → this file at /system/etc/permissions/privapp-permissions-com.screenfleet.player.xml
+     (use /product/... or /system_ext/... instead if the APK goes on that partition). -->
+<permissions>
+    <privapp-permissions package="com.screenfleet.player">
+        <permission name="android.permission.INSTALL_PACKAGES" />
+        <permission name="android.permission.SET_TIME_ZONE" />
+        <permission name="android.permission.HDMI_CEC" />
+    </privapp-permissions>
+</permissions>
